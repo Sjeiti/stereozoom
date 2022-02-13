@@ -1,5 +1,7 @@
 import {overwriteLog} from './utils/overwriteLog'
 
+import '../scss/style.scss'
+
 (()=>{
   const isLocalhost = location.hostname==='localhost'
   isLocalhost && overwriteLog()

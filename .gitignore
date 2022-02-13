@@ -2,3 +2,4 @@ _backup
 photos
 web/data
 src/index.js
+node_modules

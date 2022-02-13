@@ -2,7 +2,9 @@ const path = require('path')
 const webpack = require('webpack')
 const CopyPlugin = require('copy-webpack-plugin')
 
-const pluginPath = 'httpdocs/wp-content/plugins/spreadsheet-block/public/js'
+const dist = 'dist'
+const src = 'src'
+const index = 'index.html'
 
 module.exports = env => {
 
@@ -10,9 +12,7 @@ module.exports = env => {
   const mode = isProduction?'production':'development'
 
   const targetFileName = 'index.js'
-  const targetDir = path.resolve(__dirname, pluginPath)
-  const targetFile = path.resolve(targetDir, targetFileName)
-  const testFile = path.resolve(__dirname, 'src', targetFileName)
+  const targetDir = path.resolve(__dirname, dist)
 
   return {
     mode
@@ -23,7 +23,7 @@ module.exports = env => {
     }
     ,devServer: {
       static: {
-        directory: path.join(__dirname, 'src')
+        directory: targetDir
       }
       ,compress: true,
       port: 9000
@@ -64,8 +64,8 @@ module.exports = env => {
       })
       ,new CopyPlugin({
         patterns: [
-          { from: targetFile, to: testFile }
-          // { from: "other", to: "public" }
+          { from: path.resolve(__dirname, src, index), to: path.resolve(__dirname, dist, index) }
+          ,{ from: path.resolve(__dirname, 'static'), to: 'static' }
         ],
       })
     ]
