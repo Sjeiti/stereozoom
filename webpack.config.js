@@ -3,8 +3,8 @@ const webpack = require('webpack')
 const CopyPlugin = require('copy-webpack-plugin')
 
 const dist = 'dist'
-const src = 'src'
-const index = 'index.html'
+
+const p = path.resolve.bind(path)
 
 module.exports = env => {
 
@@ -12,7 +12,7 @@ module.exports = env => {
   const mode = isProduction?'production':'development'
 
   const targetFileName = 'index.js'
-  const targetDir = path.resolve(__dirname, dist)
+  const targetDir = p(__dirname, dist)
 
   return {
     mode
@@ -41,18 +41,18 @@ module.exports = env => {
         }
         ,{
           test: /\.scss$/
-          ,use: ["style-loader", "css-loader", "sass-loader"]
+          ,use: ['style-loader', 'css-loader', 'sass-loader']
         }
-        ,{
-          test: /\.(eot|woff|woff2|ttf|png|jp(e*)g|svg)$/
-          ,use: [{
-              loader: 'url-loader'
-              ,options: {
-                  limit: 8000 // Convert images < 8kb to base64 strings
-                  ,name: `img/[name]-[hash].[ext]`
-              }
-          }]
-        }
+        // ,{
+        //   test: /\.(eot|woff|woff2|ttf|png|jp(e*)g|svg)$/
+        //   ,use: [{
+        //       loader: 'url-loader'
+        //       ,options: {
+        //           limit: 8000 // Convert images < 8kb to base64 strings
+        //           ,name: `img/[name]-[hash].[ext]`
+        //       }
+        //   }]
+        // }
       ]
     }
     ,plugins: [
@@ -60,14 +60,27 @@ module.exports = env => {
           Buffer: ['buffer', 'Buffer']
       })
       ,new webpack.ProvidePlugin({
-         process: 'process/browser',
+         process: 'process/browser'
       })
       ,new CopyPlugin({
         patterns: [
-          { from: path.resolve(__dirname, src, index), to: path.resolve(__dirname, dist, index) }
-          ,{ from: path.resolve(__dirname, 'static'), to: 'static' }
-        ],
+          { from: p(__dirname, 'static'), to: p(__dirname, dist) }
+        ]
       })
+      // ,{
+      //   apply: (compiler) => {
+      //     console.log('compiler.hooks',Object.keys(compiler.hooks)) // todo: remove log
+      //     compiler.hooks.compile.tap("MyPlugin_compile", (a) => {
+      //       console.log("This code is executed before the compilation begins.")
+      //       console.log('a.normalModuleFactory.hooks',Object.keys(a.normalModuleFactory.hooks)) // todo: remove log
+      //       // compilation.buildModule.tap("MyPalugin_compile", () => {
+      //       //     console.log("___buildModule");
+      //       // });
+      //       // a.normalModuleFactory.hooks.resolve.tap("MyPlugin_compile", ()=>console.log('foo'))
+      //       // a.normalModuleFactory.hooks.resolve.tap("MyPlugin_compile", console.log.bind(null,'foo'))
+      //     });
+      //   },
+      // }
     ]
   }
 }

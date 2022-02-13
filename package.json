@@ -7,13 +7,12 @@
   "license": "MIT",
   "private": false,
   "scripts": {
-    "start": "run-p webpack:watch serve",
+    "start": "run-p writeImageList webpack:serve",
     "webpack": "npx webpack --config webpack.config.js",
     "webpack:watch": "yarn webpack -w",
     "webpack:prod": "yarn webpack --mode production",
-    "serve": "npx webpack serve --config webpack.config.js",
-    "css": "sass src/scss/admin.scss httpdocs/wp-content/plugins/spreadsheet-block/admin/css/style.css",
-    "css:watch": "yarn css -w"
+    "webpack:serve": "npx webpack serve --config webpack.config.js",
+    "writeImageList": "npx task/writeImageList.js"
   },
   "dependencies": {},
   "devDependencies": {

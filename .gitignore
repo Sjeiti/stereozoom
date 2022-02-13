@@ -2,5 +2,5 @@ _backup
 photos
 web/data
 dist
-src/index.js
+src/js/imageList.js
 node_modules
