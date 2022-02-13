@@ -1,5 +1,6 @@
 _backup
 photos
 web/data
+dist
 src/index.js
 node_modules
