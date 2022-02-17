@@ -1,9 +1,9 @@
 import {overwriteLog} from './utils/overwriteLog'
+import {drag} from './utils/drag'
 
 import '../scss/style.scss'
 
 import {imageList} from './imageList'
-console.log('imageList',imageList) // todo: remove log
 
 const createElement = document.createElement.bind(document)
 
@@ -15,12 +15,49 @@ async function init(){
   const isLocalhost = location.hostname==='localhost'
   isLocalhost && overwriteLog()
 
-
   const viewports = createViewports()
   const [firstImage] = imageList
 
   const img = await loadImage(`/img/${firstImage}`)
   imageToViewport(img, viewports)
+
+  const boundCalculateSize = calculateSize.bind(null, img, viewports)
+  window.addEventListener('resize', boundCalculateSize)
+  boundCalculateSize()
+
+  const viewport = viewports[0].parentNode
+  drag((x,y,xl,yl,xs,ys)=>{
+    //console.log('drag',x,y,xl,yl,xs,ys)
+    viewport.style.backgroundPosition = `${xs}px ${ys}px`  
+  })
+}
+
+function calculateSize(img, viewports){
+  const {naturalWidth, naturalHeight} = img
+  const arImg = (naturalWidth/2)/naturalHeight
+
+  const {documentElement: {clientWidth, clientHeight}} = document
+  const arViewport = (clientWidth/2)/clientHeight
+
+  const hor = arImg<arViewport
+  console.log('hor',hor)
+  console.log('\t',arImg,arViewport)
+  console.log('\t',naturalHeight,clientHeight)
+  const scale =
+      (hor?clientWidth/2:clientHeight)
+      /(hor?naturalWidth/2:naturalHeight)
+  const percentage = Math.ceil(scale*100)+'%'
+  
+  console.log('scale', scale, percentage)
+
+  const viewport = viewports[0].parentNode
+  //viewports[0].style.backgroundSize = `${scale*naturalWidth/2}px ${scale*naturalHeight}px`
+  //viewports[0].style.backgroundSize = '200% 100%'
+  //viewports[0].style.backgroundSize = Math.ceil(2*scale*100)+'%'+' '+percentage
+  //viewport.style.backgroundSize = percentage
+  //viewport.style.backgroundSize = '200% 100%'
+  viewport.style.backgroundSize = `${scale*naturalWidth/2}px ${scale*naturalHeight}px`
+
 }
 
 function createViewports(){

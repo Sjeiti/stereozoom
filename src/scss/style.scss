@@ -10,7 +10,7 @@ html, body {
 body {
   margin: 0;
   background-color: #333;
-  color: #666;
+  color: #888;
   box-shadow: 0 0 0 2px lime inset;
 }
 
@@ -39,14 +39,30 @@ body {
   justify-content: center;
   align-items: stretch;
   box-shadow: 0 0 0 1px red inset;
+  background-position: center center;
   * {
     flex: 1 0 auto;
     background-repeat: no-repeat;
     background-position: center center;
+    background-position: inherit;
+    background-size: inherit;
   }
 }
 
 pre {
   position: relative;
   z-index: 1;
+  text-shadow: 
+    0 0 2px black,
+    0 0 2px black,
+    0 0 2px black,
+    0 0 2px black,
+    0 0 2px black,
+    0 0 2px black,
+    0 0 2px black,
+    0 0 2px black,
+    0 0 2px black
+  ;
+  max-height: 100%;
+  overflow: auto;
 }
