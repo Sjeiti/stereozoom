@@ -26,9 +26,13 @@ async function init(){
   boundCalculateSize()
 
   const viewport = viewports[0].parentNode
-  drag((x,y,xl,yl,xs,ys)=>{
-    //console.log('drag',x,y,xl,yl,xs,ys)
-    viewport.style.backgroundPosition = `${xs}px ${ys}px`  
+  drag((x,y)=>{
+    //console.log('drag',x,y)
+    viewport.style.backgroundPosition = `${x}px ${y}px`  
+  })
+  zoom((x,y,xl,yl,xs,ys)=>{
+    //console.log('zoom',x,y,xl,yl,xs,ys)
+    viewport.style.backgroundSize = `${xs}px ${ys}px`  
   })
 }
 
