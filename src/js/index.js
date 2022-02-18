@@ -1,11 +1,13 @@
 import {overwriteLog} from './utils/overwriteLog'
-import {drag} from './utils/drag'
+import {drag, zoom} from './utils/drag'
 
 import '../scss/style.scss'
 
 import {imageList} from './imageList'
 
 const createElement = document.createElement.bind(document)
+
+const global = {x:0,y:0,scale:1}
 
 init()
 
@@ -26,13 +28,21 @@ async function init(){
   boundCalculateSize()
 
   const viewport = viewports[0].parentNode
-  drag((x,y)=>{
-    //console.log('drag',x,y)
-    viewport.style.backgroundPosition = `${x}px ${y}px`  
+  drag((dx,dy)=>{
+    const {x,y} = global
+    viewport.style.backgroundPosition = `${x+dx}px ${y+dy}px`
+  }).end((dx,dy)=>{
+    console.log('end',dx,dy) // todo: remove log
+    global.x += dx
+    global.y += dy
+    const {x,y} = global
+    viewport.style.backgroundPosition = `${x}px ${y}px`
   })
-  zoom((x,y,xl,yl,xs,ys)=>{
-    //console.log('zoom',x,y,xl,yl,xs,ys)
-    viewport.style.backgroundSize = `${xs}px ${ys}px`  
+  zoom((scale)=>{
+    const {naturalWidth, naturalHeight} = img
+    viewport.style.backgroundSize = `${scale*naturalWidth/2}px ${scale*naturalHeight}px`
+  }).end((d)=>{
+    console.log('zoomEnd',d) // todo: remove log
   })
 }
 
@@ -51,15 +61,10 @@ function calculateSize(img, viewports){
       (hor?clientWidth/2:clientHeight)
       /(hor?naturalWidth/2:naturalHeight)
   const percentage = Math.ceil(scale*100)+'%'
-  
+
   console.log('scale', scale, percentage)
 
   const viewport = viewports[0].parentNode
-  //viewports[0].style.backgroundSize = `${scale*naturalWidth/2}px ${scale*naturalHeight}px`
-  //viewports[0].style.backgroundSize = '200% 100%'
-  //viewports[0].style.backgroundSize = Math.ceil(2*scale*100)+'%'+' '+percentage
-  //viewport.style.backgroundSize = percentage
-  //viewport.style.backgroundSize = '200% 100%'
   viewport.style.backgroundSize = `${scale*naturalWidth/2}px ${scale*naturalHeight}px`
 
 }

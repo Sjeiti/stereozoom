@@ -26,7 +26,7 @@ module.exports = env => {
         directory: targetDir
       }
       ,compress: true,
-      port: 9000
+      port: 9202
     }
     ,devtool: 'source-map'
     ,module: {

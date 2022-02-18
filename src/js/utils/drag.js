@@ -1,74 +1,80 @@
 const add = document.addEventListener.bind(document)
 const rem = document.removeEventListener.bind(document)
 
+const touchstart = 'touchstart'
+const touchmove = 'touchmove'
+const touchend = 'touchend'
+
 const dragCallbacks = []
+const dragEndCallbacks = []
 const zoomCallbacks = []
+const zoomEndCallbacks = []
+
+const args = {drag: [0,0], zoom: 1}
+
+export const dragEnd = cb=>dragEndCallbacks.push(cb)
+export const drag = cb=>(dragCallbacks.push(cb),{end:dragEnd})
+export const zoomEnd = cb=>dragEndCallbacks.push(cb)
+export const zoom = cb=>(zoomCallbacks.push(cb),{end:zoomEnd})
 
 const start = []
-const last = []
 
-add('touchstart',e=>{
-  const {touches,touches:{length},touches:[{clientX,clientY}]} = e
+add(touchstart,e=>{
+  const {touches} = e
   storeTouchPositions(start,touches)
-  storeTouchPositions(last,touches)
-  if (e.touches.length===1){
-    add('touchmove',handleTouchMove)
-    add('touchend',handleTouchEnd)
+  if (touches.length===1){
+    add(touchmove,handleTouchMove)
+    add(touchend,handleTouchEnd)
   }
-  console.log('touchstart',JSON.stringify(start))
 })
 
 function handleTouchEnd(e){
-  //console.log('touchstart',e.touches.length)
   if (e.touches.length===0){
-    rem('touchmove',handleTouchMove)
-    rem('touchend',handleTouchEnd)
+    rem(touchmove,handleTouchMove)
+    rem(touchend,handleTouchEnd)
+    dragEndCallbacks.forEach(fn=>fn(...args.drag))
+  } else if (e.touches.length===1){
+    zoomEndCallbacks.forEach(fn=>fn(args.zoom))
   }
 }
 
 function handleTouchMove(e){
-  const touches = Array.from(e.touches)
-  const {length} = touches
-  const diff = length<=start.length&&touches.map(
-    ({clientX,clientY},i)=>{
+  const {touches, touches: {length}} = e
+  const touchPoints = Array.from(touches).map(({clientX:x,clientY:y})=>({x,y}))
+  const diff = length<=start.length&&touchPoints.map(
+    ({x,y},i)=>{
       const s = start[i]
       return {
-        x: clientX-s.x
-        ,y: clientY-s.y
+        x: x-s.x
+        ,y: y-s.y
       }
     }
   )
-  //console.log(JSON.stringify(diff))
-  console.log(JSON.stringify(touches))
   if (length===1) {
-    const [{x:x1,y:y1}] = diff
-    dragCallbacks.forEach(fn=>fn(x1,y1))
+    const [{x,y}] = diff
+    callDrag(x,y)
   } else if (length===2) {
     const [{x:x1,y:y1},{x:x2,y:y2}] = diff
     const xs = (x1 + x2)/2
     const ys = (y1 + y2)/2
-    dragCallbacks.forEach(fn=>fn(xs,ys))
-    //
+    callDrag(xs,ys)
     const startD = getDistance(...start)
-    const touchD = getDistance(...touches)
-    const d = touchD/startD
-    console.log(startD,touchD,d)
-    zoomCallbacks.forEach(fn=>fn(d))
-  } else if (length===22) {
-    const [{x:lx,y:ly}] = last
-    const [{x:sx,y:sy}] = start
-    const xl = x - lx
-    const yl = y - ly
-    const xs = x - sx
-    const ys = y - sy
-    zoomCallbacks.forEach(fn=>fn(x,y,xl,yl,xs,ys)) 
+    const touchD = getDistance(...touchPoints)
+    callZoom(touchD/startD)
   }
-  
-  storeTouchPositions(last,touches)
+}
+
+function callDrag(x,y){
+  args.drag = [x,y]
+  dragCallbacks.forEach(fn=>fn(x,y))
+}
+
+function callZoom(d){
+  args.zoom = d
+  zoomCallbacks.forEach(fn=>fn(d))
 }
 
 function storeTouchPositions(list,touches){
-  //console.log(JSON.stringify(Array.from(touches).map(({clientX,clientY})=>({clientX,clientY}))))
   list.splice(0, 10, ...Array.from(touches).map(({clientX:x,clientY:y})=>({x,y})))
 }
 
@@ -77,6 +83,3 @@ function getDistance(p1,p2){
   const dy = p2.y - p1.y
   return Math.sqrt(dx*dx + dy*dy)
 }
-
-export const drag = cb=>dragCallbacks.push(cb)
-export const zoom = cb=>zoomCallbacks.push(cb)
