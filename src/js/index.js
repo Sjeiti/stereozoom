@@ -47,12 +47,6 @@ async function init(){
     viewport.style.backgroundSize = `${realScale*naturalWidth/2}px ${realScale*naturalHeight}px`
     global.scale = realScale
   })
-  // document.addEventListener('wheel',e=>{
-  //   const {naturalWidth, naturalHeight} = img
-  //   const realScale = (1+(e.deltaY/1E3))*global.scale
-  //   viewport.style.backgroundSize = `${realScale*naturalWidth/2}px ${realScale*naturalHeight}px`
-  //   global.scale = realScale
-  // })
 
   console.log('initialised', imageList.join(', ')) // todo: remove logssp
 }
@@ -65,15 +59,16 @@ function calculateSize(img, viewports){
   const arViewport = (clientWidth/2)/clientHeight
 
   const hor = arImg<arViewport
-  console.log('hor',hor)
-  console.log('\t',arImg,arViewport)
-  console.log('\t',naturalHeight,clientHeight)
+  console.log('hor',hor)  // todo: remove log
+  console.log('\t',arImg,arViewport)  // todo: remove log
+  console.log('\t',naturalHeight,clientHeight)  // todo: remove log
   const scale =
       (hor?clientWidth/2:clientHeight)
       /(hor?naturalWidth/2:naturalHeight)
+  global.scale = scale
   const percentage = Math.ceil(scale*100)+'%'
 
-  console.log('scale', scale, percentage)
+  console.log('scale', scale, percentage)  // todo: remove log
 
   const viewport = viewports[0].parentNode
   viewport.style.backgroundSize = `${scale*naturalWidth/2}px ${scale*naturalHeight}px`

@@ -33,7 +33,10 @@ add(touchstart,e=>{
 })
 
 add(mousedown,e=>{
-  // todo
+  const {clientX,clientY} = e
+  storeTouchPositions(start,[{clientX,clientY}])
+  add(mousemove,handleMouseMove)
+  add(mouseup,handleMouseEnd)
 })
 
 add(wheel,e=>{
@@ -41,28 +44,16 @@ add(wheel,e=>{
   zoomEndCallbacks.forEach(fn=>fn(zoom))
 })
 
-function handleTouchEnd(e){
-  if (e.touches.length===0){
-    rem(touchmove,handleTouchMove)
-    rem(touchend,handleTouchEnd)
-    dragEndCallbacks.forEach(fn=>fn(...args.drag))
-  } else if (e.touches.length===1){
-    zoomEndCallbacks.forEach(fn=>fn(args.zoom))
-  }
-}
-
 function handleTouchMove(e){
   const {touches, touches: {length}} = e
   const touchPoints = Array.from(touches).map(({clientX:x,clientY:y})=>({x,y}))
-  const diff = length<=start.length&&touchPoints.map(
-    ({x,y},i)=>{
+  const diff = length<=start.length&&touchPoints.map(({x,y},i)=>{
       const s = start[i]
       return {
         x: x-s.x
         ,y: y-s.y
       }
-    }
-  )
+    })
   if (length===1) {
     const [{x,y}] = diff
     callDrag(x,y)
@@ -75,6 +66,28 @@ function handleTouchMove(e){
     const touchD = getDistance(...touchPoints)
     callZoom(touchD/startD)
   }
+}
+
+function handleTouchEnd(e){
+  if (e.touches.length===0){
+    rem(touchmove,handleTouchMove)
+    rem(touchend,handleTouchEnd)
+    dragEndCallbacks.forEach(fn=>fn(...args.drag))
+  } else if (e.touches.length===1){
+    zoomEndCallbacks.forEach(fn=>fn(args.zoom))
+  }
+}
+
+function handleMouseMove(e){
+  const [{x,y}] = start
+  const {clientX,clientY} = e
+  callDrag(clientX-x,clientY-y)
+}
+
+function handleMouseEnd(){
+  rem(mousemove,handleMouseMove)
+  rem(mouseup,handleMouseEnd)
+  dragEndCallbacks.forEach(fn=>fn(...args.drag))
 }
 
 function callDrag(x,y){
