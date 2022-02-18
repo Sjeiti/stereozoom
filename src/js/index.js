@@ -12,8 +12,6 @@ const global = {x:0,y:0,scale:1}
 init()
 
 async function init(){
-  console.log('init',23) // todo: remove logss
-
   const isLocalhost = location.hostname==='localhost'
   isLocalhost && overwriteLog()
 
@@ -27,23 +25,36 @@ async function init(){
   window.addEventListener('resize', boundCalculateSize)
   boundCalculateSize()
 
+  ////////////////////////
+
   const viewport = viewports[0].parentNode
   drag((dx,dy)=>{
     const {x,y} = global
     viewport.style.backgroundPosition = `${x+dx}px ${y+dy}px`
   }).end((dx,dy)=>{
-    console.log('end',dx,dy) // todo: remove log
     global.x += dx
     global.y += dy
     const {x,y} = global
     viewport.style.backgroundPosition = `${x}px ${y}px`
   })
   zoom((scale)=>{
+    const realScale = scale*global.scale
     const {naturalWidth, naturalHeight} = img
-    viewport.style.backgroundSize = `${scale*naturalWidth/2}px ${scale*naturalHeight}px`
-  }).end((d)=>{
-    console.log('zoomEnd',d) // todo: remove log
+    viewport.style.backgroundSize = `${realScale*naturalWidth/2}px ${realScale*naturalHeight}px`
+  }).end((scale)=>{
+    const realScale = scale*global.scale
+    const {naturalWidth, naturalHeight} = img
+    viewport.style.backgroundSize = `${realScale*naturalWidth/2}px ${realScale*naturalHeight}px`
+    global.scale = realScale
   })
+  // document.addEventListener('wheel',e=>{
+  //   const {naturalWidth, naturalHeight} = img
+  //   const realScale = (1+(e.deltaY/1E3))*global.scale
+  //   viewport.style.backgroundSize = `${realScale*naturalWidth/2}px ${realScale*naturalHeight}px`
+  //   global.scale = realScale
+  // })
+
+  console.log('initialised', imageList.join(', ')) // todo: remove logssp
 }
 
 function calculateSize(img, viewports){

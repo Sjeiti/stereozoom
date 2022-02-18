@@ -4,6 +4,10 @@ const rem = document.removeEventListener.bind(document)
 const touchstart = 'touchstart'
 const touchmove = 'touchmove'
 const touchend = 'touchend'
+const wheel = 'wheel'
+const mousedown = 'mousedown'
+const mousemove = 'mousemove'
+const mouseup = 'mouseup'
 
 const dragCallbacks = []
 const dragEndCallbacks = []
@@ -14,7 +18,7 @@ const args = {drag: [0,0], zoom: 1}
 
 export const dragEnd = cb=>dragEndCallbacks.push(cb)
 export const drag = cb=>(dragCallbacks.push(cb),{end:dragEnd})
-export const zoomEnd = cb=>dragEndCallbacks.push(cb)
+export const zoomEnd = cb=>zoomEndCallbacks.push(cb)
 export const zoom = cb=>(zoomCallbacks.push(cb),{end:zoomEnd})
 
 const start = []
@@ -26,6 +30,15 @@ add(touchstart,e=>{
     add(touchmove,handleTouchMove)
     add(touchend,handleTouchEnd)
   }
+})
+
+add(mousedown,e=>{
+  // todo
+})
+
+add(wheel,e=>{
+  const zoom = 1-(e.deltaY/1E4)
+  zoomEndCallbacks.forEach(fn=>fn(zoom))
 })
 
 function handleTouchEnd(e){
