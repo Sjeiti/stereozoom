@@ -12,7 +12,7 @@
     "webpack:watch": "yarn webpack -w",
     "webpack:prod": "yarn webpack --mode production",
     "webpack:serve": "npx webpack serve --config webpack.config.js",
-    "writeImageList": "npx task/writeImageList.js"
+    "writeImageList": "node task/writeImageList.js"
   },
   "dependencies": {},
   "devDependencies": {
