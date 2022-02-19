@@ -149,6 +149,8 @@ function resetImageScale(){
 //////////////////////////////////////////////////////////////
 
 function getScaleOffset(scale,x,y){
+  const {documentElement: {clientWidth}} = document
+  x = x%(clientWidth/2)
   const relScale = scale-1
   const relX = x - imgX
   const relY = y - imgY
@@ -160,7 +162,9 @@ function getScaleOffset(scale,x,y){
 //////////////////////////////////////////////////////////////
 
 function setPosition(x,y){
-  viewport.style.backgroundPosition = `${min(x,0)}px ${min(y,0)}px`
+  const xx = min(x,0)
+  const yy = min(y,0)
+  viewport.style.backgroundPosition = `${x}px ${y}px`
 }
 
 function setScale(scale){
