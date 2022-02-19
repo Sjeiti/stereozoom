@@ -61,20 +61,21 @@ function initEvents(){
   // window.addEventListener('resize', onWindowResize)
   // onWindowResize()
   //
-  drag((dx,dy)=>{
-    setPosition(imgX+dx,imgY+dy)
-  }).end((dx,dy)=>{
-    imgX += dx
-    imgY += dy
-    setPosition(imgX,imgY)
+  drag((x,y)=>{
+    setPosition(imgX+x,imgY+y)
+  }).end((x,y)=>{
+    setPosition(imgX += x,imgY += y)
   })
-  zoom((scale)=>{
-    const realScale = scale*imgScale
-    setScale(realScale)
-  }).end((scale)=>{
-    const realScale = scale*imgScale
-    setScale(realScale)
-    imgScale = realScale
+  zoom((scale,x,y)=>{
+    const {offsetX,offsetY} = getScaleOffset(scale,x,y)
+    setPosition(imgX-offsetX,imgY-offsetY)
+    //
+    setScale(scale*imgScale)
+  }).end((scale,x,y)=>{
+    const {offsetX,offsetY} = getScaleOffset(scale,x,y)
+    setPosition(imgX-=offsetX,imgY-=offsetY)
+    //
+    setScale(imgScale = scale*imgScale)
   })
 }
 
@@ -143,6 +144,17 @@ function resetImageScale(){
   imgY = 0
   setPosition(imgX,imgY)
   setScale(scale)
+}
+
+//////////////////////////////////////////////////////////////
+
+function getScaleOffset(scale,x,y){
+  const relScale = scale-1
+  const relX = x - imgX
+  const relY = y - imgY
+  const offsetX = relScale*relX
+  const offsetY = relScale*relY
+  return {offsetX,offsetY}
 }
 
 //////////////////////////////////////////////////////////////

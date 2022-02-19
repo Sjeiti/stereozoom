@@ -59,13 +59,16 @@ function handleTouchMove(e){
     const [{x,y}] = diff
     callDrag(x,y)
   } else if (length===2) {
-    const [{x:x1,y:y1},{x:x2,y:y2}] = diff
-    const xs = (x1 + x2)/2
-    const ys = (y1 + y2)/2
-    callDrag(xs,ys)
+    // const [{x:x1,y:y1},{x:x2,y:y2}] = diff
+    // const xs = (x1 + x2)/2
+    // const ys = (y1 + y2)/2
+    // callDrag(xs,ys)
+    const [p1,p2] = touchPoints
+    const x = (p1.x+p2.x)/2
+    const y = (p1.y+p2.y)/2
     const startD = getDistance(...start)
     const touchD = getDistance(...touchPoints)
-    callZoom(touchD/startD,xs,ys)
+    callZoom(touchD/startD,x,y)
   }
 }
 
