@@ -7,7 +7,8 @@ import {imageList} from './imageList'
 
 const createElement = document.createElement.bind(document)
 
-const global = {x:0,y:0,scale:1}
+const globalDefault = {x:0,y:0,scale:1}
+const global = Object.assign({},globalDefault)
 
 init()
 
@@ -16,39 +17,40 @@ async function init(){
   isLocalhost && overwriteLog()
 
   const viewports = createViewports()
+
+  createMenu(viewports)
+
   const [firstImage] = imageList
+  const img = await loadImageToViewport(firstImage,viewports)
 
-  const img = await loadImage(`/img/${firstImage}`)
-  imageToViewport(img, viewports)
+  initEvents(viewports,img)
+}
 
+function initEvents(viewports,img){
   const boundCalculateSize = calculateSize.bind(null, img, viewports)
   window.addEventListener('resize', boundCalculateSize)
   boundCalculateSize()
 
-  ////////////////////////
-
   const viewport = viewports[0].parentNode
   drag((dx,dy)=>{
     const {x,y} = global
-    viewport.style.backgroundPosition = `${x+dx}px ${y+dy}px`
+    setPosition(viewport,x+dx,y+dy)
   }).end((dx,dy)=>{
     global.x += dx
     global.y += dy
     const {x,y} = global
-    viewport.style.backgroundPosition = `${x}px ${y}px`
+    setPosition(viewport,x,y)
   })
   zoom((scale)=>{
     const realScale = scale*global.scale
-    const {naturalWidth, naturalHeight} = img
-    viewport.style.backgroundSize = `${realScale*naturalWidth/2}px ${realScale*naturalHeight}px`
+    setScale(viewport,img,realScale)
   }).end((scale)=>{
     const realScale = scale*global.scale
-    const {naturalWidth, naturalHeight} = img
-    viewport.style.backgroundSize = `${realScale*naturalWidth/2}px ${realScale*naturalHeight}px`
+    setScale(viewport,img,realScale)
     global.scale = realScale
   })
 
-  console.log('initialised', imageList.join(', ')) // todo: remove logssp
+  console.log('initialised') // todo: remove log
 }
 
 function calculateSize(img, viewports){
@@ -59,20 +61,14 @@ function calculateSize(img, viewports){
   const arViewport = (clientWidth/2)/clientHeight
 
   const hor = arImg<arViewport
-  console.log('hor',hor)  // todo: remove log
-  console.log('\t',arImg,arViewport)  // todo: remove log
-  console.log('\t',naturalHeight,clientHeight)  // todo: remove log
   const scale =
       (hor?clientWidth/2:clientHeight)
       /(hor?naturalWidth/2:naturalHeight)
   global.scale = scale
   const percentage = Math.ceil(scale*100)+'%'
 
-  console.log('scale', scale, percentage)  // todo: remove log
-
   const viewport = viewports[0].parentNode
-  viewport.style.backgroundSize = `${scale*naturalWidth/2}px ${scale*naturalHeight}px`
-
+  setScale(viewport,img,scale)
 }
 
 function createViewports(){
@@ -80,6 +76,36 @@ function createViewports(){
   viewport.classList.add('viewport')
   document.body.appendChild(viewport)
   return [1,1].map(()=>viewport.appendChild(createElement('div')))
+}
+
+function createMenu(viewports){
+  const div = createElement('div')
+  div.classList.add('menu')
+  const select = createElement('select')
+  div.appendChild(select)
+  imageList.forEach(img=>{
+    const [name] = img.replace(/-/g,' ').split(/_/g)
+    const option = createElement('option')
+    option.value = img
+    option.textContent = name
+    select.appendChild(option)
+  })
+  select.addEventListener('change',onSelectChange.bind(null,viewports))
+  document.body.appendChild(div)
+  select.addEventListener('mousedown',e=>e.stopPropagation())
+}
+
+async function onSelectChange(viewports,e){
+  const {target:{value}} = e
+  loadImageToViewport(value)
+  const img = await loadImageToViewport(value,viewports)
+  Object.assign(global,globalDefault)
+}
+
+async function loadImageToViewport(file,viewports){
+  const img = await loadImage(`/img/${file}`)
+  imageToViewport(img, viewports)
+  return img
 }
 
 function loadImage(uri){
@@ -113,5 +139,14 @@ function getHalfData(img) {
   context.drawImage(img, -naturalWidth/2, 0)
   const second = canvas.toDataURL()
   return [first, second]
+}
+
+function setPosition(target,x,y){
+  const {min} = Math  
+  target.style.backgroundPosition = `${min(x,0)}px ${min(y,0)}px`
+}
+function setScale(target,img,scale){
+  const {naturalWidth, naturalHeight} = img
+  target.style.backgroundSize = `${scale*naturalWidth/2}px ${scale*naturalHeight}px`
 }
 
