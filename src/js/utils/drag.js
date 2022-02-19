@@ -40,8 +40,9 @@ add(mousedown,e=>{
 })
 
 add(wheel,e=>{
-  const zoom = 1-(e.deltaY/1E4)
-  zoomEndCallbacks.forEach(fn=>fn(zoom))
+  const {clientX, clientY, deltaY} = e
+  const zoom = 1-(deltaY/1E4)
+  zoomEndCallbacks.forEach(fn=>fn(zoom,clientX,clientY))
 })
 
 function handleTouchMove(e){
@@ -64,7 +65,7 @@ function handleTouchMove(e){
     callDrag(xs,ys)
     const startD = getDistance(...start)
     const touchD = getDistance(...touchPoints)
-    callZoom(touchD/startD)
+    callZoom(touchD/startD,xs,ys)
   }
 }
 
@@ -74,7 +75,7 @@ function handleTouchEnd(e){
     rem(touchend,handleTouchEnd)
     dragEndCallbacks.forEach(fn=>fn(...args.drag))
   } else if (e.touches.length===1){
-    zoomEndCallbacks.forEach(fn=>fn(args.zoom))
+    zoomEndCallbacks.forEach(fn=>fn(...args.zoom))
   }
 }
 
@@ -95,9 +96,9 @@ function callDrag(x,y){
   dragCallbacks.forEach(fn=>fn(x,y))
 }
 
-function callZoom(d){
-  args.zoom = d
-  zoomCallbacks.forEach(fn=>fn(d))
+function callZoom(d,x,y){
+  args.zoom = [d,x,y]
+  zoomCallbacks.forEach(fn=>fn(d,x,y))
 }
 
 function storeTouchPositions(list,touches){
