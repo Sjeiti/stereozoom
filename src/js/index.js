@@ -5,7 +5,7 @@ import '../scss/style.scss'
 
 import {imageList} from './imageList'
 
-const {min} = Math
+const {min,max} = Math
 
 const createElement = document.createElement.bind(document)
 
@@ -13,11 +13,19 @@ const createElement = document.createElement.bind(document)
 
 let viewport
 let viewports
+let viewportW
+let viewportH
+let viewportAR
 
 let img
 let imgX = 0
 let imgY = 0
+let imgW
+let imgH
+let imgAR
 let imgScale = 1
+let imgScaleMin = 0.1
+let imgScaleMax = 2
 
 //
 
@@ -58,24 +66,24 @@ function initMenu(){
 }
 
 function initEvents(){
-  // window.addEventListener('resize', onWindowResize)
-  // onWindowResize()
+  window.addEventListener('resize', onWindowResize)
+  onWindowResize()
   //
   drag((x,y)=>{
-    setPosition(imgX+x,imgY+y)
+    setPosition(clampX(imgX+x),clampY(imgY+y))
   }).end((x,y)=>{
-    setPosition(imgX += x,imgY += y)
+    setPosition(imgX = clampX(imgX+x),imgY = clampY(imgY+y))
   })
   zoom((scale,x,y)=>{
     const {offsetX,offsetY} = getScaleOffset(scale,x,y)
-    setPosition(imgX-offsetX,imgY-offsetY)
+    setPosition(clampX(imgX-offsetX),clampY(imgY-offsetY))
     //
-    setScale(scale*imgScale)
+    setScale(clampScale(scale*imgScale))
   }).end((scale,x,y)=>{
     const {offsetX,offsetY} = getScaleOffset(scale,x,y)
-    setPosition(imgX-=offsetX,imgY-=offsetY)
+    setPosition(imgX = clampX(imgX-offsetX),imgY = clampY(imgY-offsetY))
     //
-    setScale(imgScale = scale*imgScale)
+    setScale(imgScale = clampScale(scale*imgScale))
   })
 }
 
@@ -85,15 +93,21 @@ function onSelectChange(e){
   loadImageToViewport(e.target.value)
 }
 
-/*
 function onWindowResize(){
+  const {documentElement: {clientWidth, clientHeight}} = document
+  viewportW = clientWidth/2
+  viewportH = clientHeight
+  viewportAR = viewportW/viewportH
 }
-*/
 
 //////////////////////////////////////////////////////////////
 
 async function loadImageToViewport(file){
   await loadImage(`/img/${file}`)
+  const {naturalWidth, naturalHeight} = img
+  imgW = naturalWidth/2
+  imgH = naturalHeight
+  imgAR = imgW/imgH
   imageToViewport()
 }
 
@@ -115,30 +129,23 @@ function imageToViewport(){
 }
 
 function getHalfData() {
-  const {naturalWidth, naturalHeight} = img
   const canvas = document.createElement('canvas')
-  canvas.width = naturalWidth/2
-  canvas.height = naturalHeight
+  canvas.width = imgW
+  canvas.height = imgH
   const context = canvas.getContext('2d')
   context.drawImage(img, 0, 0)
   const first = canvas.toDataURL()
-  context.drawImage(img, -naturalWidth/2, 0)
+  context.drawImage(img, -imgW, 0)
   const second = canvas.toDataURL()
   return [first, second]
 }
 
 function resetImageScale(){
-  const {naturalWidth, naturalHeight} = img
-  const arImg = (naturalWidth/2)/naturalHeight
-  //
-  const {documentElement: {clientWidth, clientHeight}} = document
-  const arViewport = (clientWidth/2)/clientHeight
-  //
-  const hor = arImg<arViewport
+  const hor = imgAR<viewportAR
   const scale =
-      (hor?clientWidth/2:clientHeight)
-      /(hor?naturalWidth/2:naturalHeight)
-  imgScale = scale
+      (hor?viewportW:viewportH)
+      /(hor?imgW:imgH)
+  imgScaleMin = imgScale = scale
   //
   imgX = 0
   imgY = 0
@@ -149,8 +156,7 @@ function resetImageScale(){
 //////////////////////////////////////////////////////////////
 
 function getScaleOffset(scale,x,y){
-  const {documentElement: {clientWidth}} = document
-  x = x%(clientWidth/2)
+  x = x%viewportW
   const relScale = scale-1
   const relX = x - imgX
   const relY = y - imgY
@@ -159,16 +165,25 @@ function getScaleOffset(scale,x,y){
   return {offsetX,offsetY}
 }
 
+function clampScale(scale){
+	return min(max(scale,imgScaleMin),imgScaleMax)
+}
+
+function clampX(x){
+	return min(max(x,viewportW-imgScale*imgW),0)
+}
+
+function clampY(y){
+	return min(max(y,viewportH-imgScale*imgH),0)
+}
+
 //////////////////////////////////////////////////////////////
 
 function setPosition(x,y){
-  const xx = min(x,0)
-  const yy = min(y,0)
   viewport.style.backgroundPosition = `${x}px ${y}px`
 }
 
 function setScale(scale){
-  const {naturalWidth, naturalHeight} = img
-  viewport.style.backgroundSize = `${scale*naturalWidth/2}px ${scale*naturalHeight}px`
+  viewport.style.backgroundSize = `${scale*imgW}px ${scale*imgH}px`
 }
 
