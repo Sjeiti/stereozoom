@@ -26,13 +26,11 @@ init()
 async function init(){
   const isLocalhost = location.hostname==='localhost'
   isLocalhost && overwriteLog()
-
   initViewports()
   initMenu()
   initEvents()
-
-  const [firstImage] = imageList
-  await loadImageToViewport(firstImage)
+  await loadImageToViewport(imageList[Math.random()*imageList.length<<0])
+  console.log('initialised') // todo: remove log
 }
 
 function initViewports(){
@@ -78,8 +76,6 @@ function initEvents(){
     setScale(realScale)
     imgScale = realScale
   })
-  //
-  console.log('initialised') // todo: remove log
 }
 
 //////////////////////////////////////////////////////////////
@@ -143,6 +139,9 @@ function resetImageScale(){
       /(hor?naturalWidth/2:naturalHeight)
   imgScale = scale
   //
+  imgX = 0
+  imgY = 0
+  setPosition(imgX,imgY)
   setScale(scale)
 }
 
