@@ -12,52 +12,58 @@ const createElement = document.createElement.bind(document)
 const globalDefault = {x:0,y:0,scale:1}
 const global = Object.assign({},globalDefault)
 
+//
+
+let viewport
+let viewports
+
+//
+
 init()
 
 async function init(){
   const isLocalhost = location.hostname==='localhost'
   isLocalhost && overwriteLog()
 
-  const viewports = initViewports()
+  initViewports()
 
   const [firstImage] = imageList
-  const img = await loadImageToViewport(firstImage,viewports)
+  const img = await loadImageToViewport(firstImage)
 
-  initMenu(viewports,img)
+  initMenu(img)
 
-  initEvents(viewports,img)
+  initEvents(img)
 }
 
 function initViewports(){
-  const viewport = createElement('div')
+  viewport = createElement('div')
   viewport.classList.add('viewport')
   document.body.appendChild(viewport)
-  return [1,1].map(()=>viewport.appendChild(createElement('div')))
+  viewports = [1,1].map(()=>viewport.appendChild(createElement('div')))
 }
 
-function initMenu(viewports,img){
+function initMenu(img){
   const div = createElement('div')
   div.classList.add('menu')
   const select = createElement('select')
   div.appendChild(select)
-  imageList.forEach(img=>{
-    const [name] = img.replace(/-/g,' ').split(/_/g)
+  imageList.forEach(imgName=>{
+    const [name] = imgName.replace(/-/g,' ').split(/_/g)
     const option = createElement('option')
-    option.value = img
+    option.value = imgName
     option.textContent = name
     select.appendChild(option)
   })
-  select.addEventListener('change',onSelectChange.bind(null,viewports,img))
+  select.addEventListener('change',onSelectChange.bind(null,img))
   document.body.appendChild(div)
   select.addEventListener('mousedown',e=>e.stopPropagation())
 }
 
-function initEvents(viewports,img){
-  const boundCalculateSize = calculateSize.bind(null, img, viewports)
+function initEvents(img){
+  const boundCalculateSize = calculateSize.bind(null, img)
   window.addEventListener('resize', boundCalculateSize)
   boundCalculateSize()
   //
-  const viewport = viewports[0].parentNode
   drag((dx,dy)=>{
     const {x,y} = global
     setPosition(viewport,x+dx,y+dy)
@@ -81,13 +87,13 @@ function initEvents(viewports,img){
 
 //////////////////////////////////////////////////////////////
 
-function onSelectChange(viewports,img,e){
+function onSelectChange(img,e){
   const {target:{value}} = e
   Object.assign(global,globalDefault)
-  loadImageToViewport(value,viewports,img)
+  loadImageToViewport(value,img)
 }
 
-function calculateSize(img, viewports){
+function calculateSize(img){
   const {naturalWidth, naturalHeight} = img
   const arImg = (naturalWidth/2)/naturalHeight
   //
@@ -100,15 +106,14 @@ function calculateSize(img, viewports){
       /(hor?naturalWidth/2:naturalHeight)
   global.scale = scale
   //
-  const viewport = viewports[0].parentNode
   setScale(viewport,img,scale)
 }
 
 //
 
-async function loadImageToViewport(file,viewports,_img){
+async function loadImageToViewport(file,_img){
   const img = await loadImage(`/img/${file}`,_img)
-  imageToViewport(img, viewports)
+  imageToViewport(img)
   return img
 }
 
@@ -120,7 +125,7 @@ function loadImage(uri,img){
   })
 }
 
-function imageToViewport(img, viewports){
+function imageToViewport(img){
   getHalfData(img).forEach((dataUri, index)=>{
     Object.assign(viewports[index].style, {
       backgroundImage: `url(${dataUri})`
