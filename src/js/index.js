@@ -25,7 +25,7 @@ let imgH
 let imgAR
 let imgScale = 1
 let imgScaleMin = 0.1
-let imgScaleMax = 2
+let imgScaleMax = 3
 
 //
 
