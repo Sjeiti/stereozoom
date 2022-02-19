@@ -9,13 +9,15 @@ const {min} = Math
 
 const createElement = document.createElement.bind(document)
 
-const globalDefault = {x:0,y:0,scale:1}
-const global = Object.assign({},globalDefault)
-
 //
 
 let viewport
 let viewports
+
+let img
+let imgX = 0
+let imgY = 0
+let imgScale = 1
 
 //
 
@@ -26,13 +28,11 @@ async function init(){
   isLocalhost && overwriteLog()
 
   initViewports()
+  initMenu()
+  initEvents()
 
   const [firstImage] = imageList
-  const img = await loadImageToViewport(firstImage)
-
-  initMenu(img)
-
-  initEvents(img)
+  await loadImageToViewport(firstImage)
 }
 
 function initViewports(){
@@ -42,7 +42,7 @@ function initViewports(){
   viewports = [1,1].map(()=>viewport.appendChild(createElement('div')))
 }
 
-function initMenu(img){
+function initMenu(){
   const div = createElement('div')
   div.classList.add('menu')
   const select = createElement('select')
@@ -54,32 +54,29 @@ function initMenu(img){
     option.textContent = name
     select.appendChild(option)
   })
-  select.addEventListener('change',onSelectChange.bind(null,img))
+  select.addEventListener('change',onSelectChange)
   document.body.appendChild(div)
   select.addEventListener('mousedown',e=>e.stopPropagation())
 }
 
-function initEvents(img){
-  const boundCalculateSize = calculateSize.bind(null, img)
-  window.addEventListener('resize', boundCalculateSize)
-  boundCalculateSize()
+function initEvents(){
+  // window.addEventListener('resize', onWindowResize)
+  // onWindowResize()
   //
   drag((dx,dy)=>{
-    const {x,y} = global
-    setPosition(viewport,x+dx,y+dy)
+    setPosition(imgX+dx,imgY+dy)
   }).end((dx,dy)=>{
-    global.x += dx
-    global.y += dy
-    const {x,y} = global
-    setPosition(viewport,x,y)
+    imgX += dx
+    imgY += dy
+    setPosition(imgX,imgY)
   })
   zoom((scale)=>{
-    const realScale = scale*global.scale
-    setScale(viewport,img,realScale)
+    const realScale = scale*imgScale
+    setScale(realScale)
   }).end((scale)=>{
-    const realScale = scale*global.scale
-    setScale(viewport,img,realScale)
-    global.scale = realScale
+    const realScale = scale*imgScale
+    setScale(realScale)
+    imgScale = realScale
   })
   //
   console.log('initialised') // todo: remove log
@@ -87,53 +84,40 @@ function initEvents(img){
 
 //////////////////////////////////////////////////////////////
 
-function onSelectChange(img,e){
-  const {target:{value}} = e
-  Object.assign(global,globalDefault)
-  loadImageToViewport(value,img)
+function onSelectChange(e){
+  loadImageToViewport(e.target.value)
 }
 
-function calculateSize(img){
-  const {naturalWidth, naturalHeight} = img
-  const arImg = (naturalWidth/2)/naturalHeight
-  //
-  const {documentElement: {clientWidth, clientHeight}} = document
-  const arViewport = (clientWidth/2)/clientHeight
-  //
-  const hor = arImg<arViewport
-  const scale =
-      (hor?clientWidth/2:clientHeight)
-      /(hor?naturalWidth/2:naturalHeight)
-  global.scale = scale
-  //
-  setScale(viewport,img,scale)
+/*
+function onWindowResize(){
+}
+*/
+
+//////////////////////////////////////////////////////////////
+
+async function loadImageToViewport(file){
+  await loadImage(`/img/${file}`)
+  imageToViewport()
 }
 
-//
-
-async function loadImageToViewport(file,_img){
-  const img = await loadImage(`/img/${file}`,_img)
-  imageToViewport(img)
-  return img
-}
-
-function loadImage(uri,img){
+function loadImage(uri){
 	return new Promise((resolve, reject)=>{
-    img = img||document.createElement('img')
+    img = document.createElement('img')
     img.addEventListener('load', e=>resolve(e.target))
     img.src = uri
   })
 }
 
-function imageToViewport(img){
-  getHalfData(img).forEach((dataUri, index)=>{
+function imageToViewport(){
+  getHalfData().forEach((dataUri, index)=>{
     Object.assign(viewports[index].style, {
       backgroundImage: `url(${dataUri})`
     })
   })
+  resetImageScale()
 }
 
-function getHalfData(img) {
+function getHalfData() {
   const {naturalWidth, naturalHeight} = img
   const canvas = document.createElement('canvas')
   canvas.width = naturalWidth/2
@@ -146,14 +130,30 @@ function getHalfData(img) {
   return [first, second]
 }
 
-//
-
-function setPosition(target,x,y){
-  target.style.backgroundPosition = `${min(x,0)}px ${min(y,0)}px`
+function resetImageScale(){
+  const {naturalWidth, naturalHeight} = img
+  const arImg = (naturalWidth/2)/naturalHeight
+  //
+  const {documentElement: {clientWidth, clientHeight}} = document
+  const arViewport = (clientWidth/2)/clientHeight
+  //
+  const hor = arImg<arViewport
+  const scale =
+      (hor?clientWidth/2:clientHeight)
+      /(hor?naturalWidth/2:naturalHeight)
+  imgScale = scale
+  //
+  setScale(scale)
 }
 
-function setScale(target,img,scale){
+//////////////////////////////////////////////////////////////
+
+function setPosition(x,y){
+  viewport.style.backgroundPosition = `${min(x,0)}px ${min(y,0)}px`
+}
+
+function setScale(scale){
   const {naturalWidth, naturalHeight} = img
-  target.style.backgroundSize = `${scale*naturalWidth/2}px ${scale*naturalHeight}px`
+  viewport.style.backgroundSize = `${scale*naturalWidth/2}px ${scale*naturalHeight}px`
 }
 
