@@ -33,8 +33,9 @@ init()
 
 async function init(){
   const isLocalhost = location.hostname==='localhost'
-  isLocalhost && overwriteLog()
+  //isLocalhost && overwriteLog()
   initViewports()
+  //initTitle()
   initMenu()
   initEvents()
   await loadImageToViewport(imageList[Math.random()*imageList.length<<0])
@@ -48,9 +49,22 @@ function initViewports(){
   viewports = [1,1].map(()=>viewport.appendChild(createElement('div')))
 }
 
+function initTitle(){
+  viewports.forEach(v=>{
+    const h1 = createElement('h1')
+    h1.textContent = 'stereozoom'
+    v.appendChild(h1)
+  })
+}
+
 function initMenu(){
   const div = createElement('div')
   div.classList.add('menu')
+
+  const h1 = createElement('h1')
+  h1.textContent = h1.dataset.text = 'stereozoom'
+  div.appendChild(h1)
+
   const select = createElement('select')
   div.appendChild(select)
   imageList.forEach(imgName=>{
