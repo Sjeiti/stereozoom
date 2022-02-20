@@ -67,7 +67,7 @@ function initMenu(){
 
   const select = createElement('select')
   div.appendChild(select)
-  imageList.forEach(imgName=>{
+  ;['info',...imageList].forEach(imgName=>{
     const [name] = imgName.replace(/-/g,' ').split(/_/g)
     const option = createElement('option')
     option.value = imgName
@@ -104,7 +104,10 @@ function initEvents(){
 //////////////////////////////////////////////////////////////
 
 function onSelectChange(e){
-  loadImageToViewport(e.target.value)
+  const {value} = e.target
+  value==='info'
+    ?showInfo()
+    :loadImageToViewport(value)
 }
 
 function onWindowResize(){
@@ -189,6 +192,12 @@ function clampX(x){
 
 function clampY(y){
 	return min(max(y,viewportH-imgScale*imgH),0)
+}
+
+//////////////////////////////////////////////////////////////
+
+function showInfo(){
+
 }
 
 //////////////////////////////////////////////////////////////
