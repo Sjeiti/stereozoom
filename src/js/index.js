@@ -1,21 +1,22 @@
-import {overwriteLog} from './utils/overwriteLog'
+// import {overwriteLog} from './utils/overwriteLog'
 import {drag, zoom} from './utils/drag'
 
 import '../scss/style.scss'
 
-import {imageList} from './imageList'
+import {imageList} from './imageList2'
 
 const {min,max} = Math
 
 const createElement = document.createElement.bind(document)
 
 //
-
 let viewport
 let viewports
 let viewportW
 let viewportH
 let viewportAR
+
+let background
 
 let img
 let imgX = 0
@@ -27,6 +28,8 @@ let imgScale = 1
 let imgScaleMin = 0.1
 let imgScaleMax = 3
 
+const marginMax = 80
+
 //
 
 init()
@@ -35,10 +38,12 @@ async function init(){
   const isLocalhost = location.hostname==='localhost'
   //isLocalhost && overwriteLog()
   initViewports()
+  initBackground()
   //initTitle()
   initMenu()
+  initRange()
   initEvents()
-  await loadImageToViewport(imageList[Math.random()*imageList.length<<0])
+  await loadImageToViewport(imageList[Math.random()*imageList.length<<0].secure_url)
   console.log('initialised') // todo: remove log
 }
 
@@ -49,12 +54,18 @@ function initViewports(){
   viewports = [1,1].map(()=>viewport.appendChild(createElement('div')))
 }
 
-function initTitle(){
+/*function initTitle(){
   viewports.forEach(v=>{
     const h1 = createElement('h1')
     h1.textContent = 'stereozoom'
     v.appendChild(h1)
   })
+}*/
+
+function initBackground(){
+  background = createElement('div')
+  background.classList.add('background')
+  document.body.appendChild(background)
 }
 
 function initMenu(){
@@ -67,16 +78,47 @@ function initMenu(){
 
   const select = createElement('select')
   div.appendChild(select)
-  imageList.forEach(imgName=>{
-    const [name] = imgName.replace(/-/g,' ').split(/_/g)
+  imageList.forEach(({filename, url, secure_url, context})=>{
     const option = createElement('option')
-    option.value = imgName
-    option.textContent = name
+    option.value = secure_url
+    option.textContent = filename
     select.appendChild(option)
   })
   select.addEventListener('change',onSelectChange)
   document.body.appendChild(div)
   select.addEventListener('mousedown',e=>e.stopPropagation())
+}
+
+function initRange(){
+  const range = createElement('input')
+  range.setAttribute('type', 'range')
+  range.classList.add('range')
+  document.body.appendChild(range)
+  //
+  const rangeRule = Array.from(document.styleSheets).map(sheet=>{
+    try {
+      return Array.from(sheet.cssRules).find(rule=>rule.selectorText==='.viewport, .menu')
+    } catch(err) {}
+  }).find(n=>n)
+  const {style} = rangeRule
+  //
+  const lsMarginName = 'margin'
+  const lsMargin = localStorage.getItem(lsMarginName)
+  if (lsMargin!==null) {
+    setWidthMargin(style, parseFloat(lsMargin))
+    onWindowResize()
+  }
+  range.value = 100-parseFloat(style.width)
+  //
+  range.addEventListener('input',(e)=>{
+    const value = Math.min(e.target.valueAsNumber,marginMax)
+    if (value===marginMax) {
+      e.target.value = marginMax
+    }
+    setWidthMargin(style, value)
+    onWindowResize()
+    localStorage.setItem(lsMarginName, value)
+  })
 }
 
 function initEvents(){
@@ -108,26 +150,41 @@ function onSelectChange(e){
 }
 
 function onWindowResize(){
-  const {documentElement: {clientWidth, clientHeight}} = document
+  // const vieportWOld = viewportW
+  const {clientWidth, clientHeight} = viewport
   viewportW = clientWidth/2
   viewportH = clientHeight
   viewportAR = viewportW/viewportH
+  // const viewportWDiff = vieportWOld - viewportW
+  // imgX = imgX - viewportWDiff/2
+  // setPosition(imgX,imgY)
 }
 
 //////////////////////////////////////////////////////////////
 
+function setWidthMargin(style, margin){
+  style.width = 100 - margin + '%'
+  style.marginLeft = margin/2 + '%'
+}
+
 async function loadImageToViewport(file){
-  await loadImage(`/img/${file}`)
+  // const prefix = 'https://res.cloudinary.com/dn1rmdjs5/image/upload/v1693595005/stereozoom/'
+  // // const prefix = '/img/'
+  // await loadImage(prefix+file)
+  await loadImage(file)
   const {naturalWidth, naturalHeight} = img
   imgW = naturalWidth/2
   imgH = naturalHeight
   imgAR = imgW/imgH
   imageToViewport()
+  //
+  background.style.backgroundImage = `url('${file}')`
 }
 
 function loadImage(uri){
 	return new Promise((resolve, reject)=>{
     img = document.createElement('img')
+    img.crossOrigin = 'anonymous'
     img.addEventListener('load', e=>resolve(e.target))
     img.src = uri
   })

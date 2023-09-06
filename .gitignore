@@ -5,3 +5,5 @@ dist
 src/js/imageList.js
 static/img/*.jpg
 node_modules
+/.env
+/yarn-error.log
