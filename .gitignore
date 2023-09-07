@@ -2,7 +2,6 @@ _backup
 photos
 web/data
 dist
-src/js/imageList.js
 static/img/*.jpg
 node_modules
 /.env
