@@ -1,9 +1,8 @@
-// import {overwriteLog} from './utils/overwriteLog'
 import {drag, zoom} from './utils/drag'
 
 import '../scss/style.scss'
 
-import {imageList} from './imageList2'
+import {imageList} from './imageList'
 
 const {min,max} = Math
 
@@ -35,8 +34,7 @@ const marginMax = 80
 init()
 
 async function init(){
-  const isLocalhost = location.hostname==='localhost'
-  //isLocalhost && overwriteLog()
+  // const isLocalhost = location.hostname==='localhost'
   initViewports()
   initBackground()
   //initTitle()

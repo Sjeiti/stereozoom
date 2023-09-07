@@ -32,14 +32,14 @@ cloudinary.config({
 
     const {resources, resources: {length}} = result
     const list = resources.map(n=>n.secure_url)
-    console.log('crinoide3',resources.find(n=>n.filename==='crinoide3')) // todo: remove log
+    // console.log('crinoide3',resources.find(n=>n.filename==='crinoide3'))
     console.info(`Written ${length} images to imageList`)
     writeFile('src/js/imageList1.js', `export const imageList = ${JSON.stringify(list)}`)
 
     ///
 
     const newlist = resources.map(({filename,url,secure_url,context})=>({filename,url,secure_url,context}))
-    writeFile('src/js/imageList2.js', `export const imageList = ${JSON.stringify(newlist)}`)
+    writeFile('src/js/imageList.js', `export const imageList = ${JSON.stringify(newlist)}`)
 
   } catch (err) {
     console.error(err)
