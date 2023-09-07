@@ -2,7 +2,7 @@
   "name": "StereoZoom",
   "short_name": "StereoZoom",
   "start_url": ".",
-  "display": "standalone",
+  "display": "fullscreen",
   "_display": "fullscreen, standalone, or minimal-ui",
   "background_color": "#000",
   "description": "Watch images in 3D.",
