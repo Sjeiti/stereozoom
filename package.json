@@ -1,5 +1,5 @@
 {
-  "name": "Stereozoom",
+  "name": "stereozoom",
   "version": "2.0.0",
   "main": "index.js",
   "repository": "git@github.com:Sjeiti/circularyarnlabel_csvplugin.git",
@@ -12,7 +12,7 @@
     "webpack:watch": "yarn webpack -w",
     "webpack:prod": "yarn webpack --mode production",
     "webpack:serve": "npx webpack serve --config webpack.config.js",
-    "writeImageList": "node task/writeImageList.js"
+    "fetchCloudinary": "node task/fetchCloudinary.js"
   },
   "dependencies": {},
   "devDependencies": {
