@@ -1,12 +1,13 @@
-import {drag, zoom} from './utils/drag'
-
 import '../scss/style.scss'
-
+import {drag, zoom} from './utils/drag'
 import {imageList} from './imageList'
+import {createElement} from './utils'
 
 const {min,max} = Math
 
-const createElement = document.createElement.bind(document)
+const root = document.querySelector('[data-stereozoom]')
+const querySelector = selector => root.querySelector(selector)
+const querySelectorAll = selector => root.querySelectorAll(selector)
 
 //
 let viewport
@@ -14,10 +15,12 @@ let viewports
 let viewportW
 let viewportH
 let viewportAR
+let loaders
+let contexts
 
 let background
 
-let img
+// let img
 let imgX = 0
 let imgY = 0
 let imgW
@@ -25,9 +28,13 @@ let imgH
 let imgAR
 let imgScale = 1
 let imgScaleMin = 0.1
-let imgScaleMax = 3
+const imgScaleMax = 3
 
 const marginMax = 80
+
+const className = {
+  loaded: 'loaded'
+}
 
 //
 
@@ -35,63 +42,38 @@ init()
 
 async function init(){
   // const isLocalhost = location.hostname==='localhost'
-  initViewports()
-  initBackground()
-  //initTitle()
-  initMenu()
+  initElements()
+  initSelect()
   initRange()
   initEvents()
-  await loadImageToViewport(imageList[Math.random()*imageList.length<<0].secure_url)
+
+  const {hash} = location
+  const filename = hash.substring(1)
+  const image = imageList.find(img=>img.filename===filename)||imageList[Math.random()*imageList.length<<0]
+  await loadImageToViewport(image.secure_url)
+
   console.log('initialised') // todo: remove log
 }
 
-function initViewports(){
-  viewport = createElement('div')
-  viewport.classList.add('viewport')
-  document.body.appendChild(viewport)
-  viewports = [1,1].map(()=>viewport.appendChild(createElement('div')))
+function initElements(){
+  viewport = querySelector('.viewport')
+  viewports = querySelectorAll('.viewport>div')
+  loaders = querySelectorAll('.loader')
+  contexts = querySelectorAll('.context')
+  background = querySelector('.background')
 }
 
-/*function initTitle(){
-  viewports.forEach(v=>{
-    const h1 = createElement('h1')
-    h1.textContent = 'stereozoom'
-    v.appendChild(h1)
-  })
-}*/
-
-function initBackground(){
-  background = createElement('div')
-  background.classList.add('background')
-  document.body.appendChild(background)
-}
-
-function initMenu(){
-  const div = createElement('div')
-  div.classList.add('menu')
-
-  const h1 = createElement('h1')
-  h1.textContent = h1.dataset.text = 'stereozoom'
-  div.appendChild(h1)
-
-  const select = createElement('select')
-  div.appendChild(select)
-  imageList.forEach(({filename, url, secure_url, context})=>{
-    const option = createElement('option')
-    option.value = secure_url
-    option.textContent = filename
-    select.appendChild(option)
+function initSelect(){
+  const select = querySelector('select')
+  imageList.forEach(({filename,secure_url,context:{caption}={}})=>{
+    createElement('option', select, {value:secure_url, textContent:caption||filename})
   })
   select.addEventListener('change',onSelectChange)
-  document.body.appendChild(div)
   select.addEventListener('mousedown',e=>e.stopPropagation())
 }
 
 function initRange(){
-  const range = createElement('input')
-  range.setAttribute('type', 'range')
-  range.classList.add('range')
-  document.body.appendChild(range)
+  const range = querySelector('input[type=range]')
   //
   const rangeRule = Array.from(document.styleSheets).map(sheet=>{
     try {
@@ -108,6 +90,7 @@ function initRange(){
   }
   range.value = 100-parseFloat(style.width)
   //
+  range.addEventListener('mousedown',e=>e.stopPropagation())
   range.addEventListener('input',(e)=>{
     const value = Math.min(e.target.valueAsNumber,marginMax)
     if (value===marginMax) {
@@ -156,6 +139,7 @@ function onWindowResize(){
   // const viewportWDiff = vieportWOld - viewportW
   // imgX = imgX - viewportWDiff/2
   // setPosition(imgX,imgY)
+  resetImageScale()
 }
 
 //////////////////////////////////////////////////////////////
@@ -166,30 +150,56 @@ function setWidthMargin(style, margin){
 }
 
 async function loadImageToViewport(file){
-  // const prefix = 'https://res.cloudinary.com/dn1rmdjs5/image/upload/v1693595005/stereozoom/'
-  // // const prefix = '/img/'
-  // await loadImage(prefix+file)
-  await loadImage(file)
+  clearMeta()
+  await preLoadImage(file)
+  const img = await loadImage(file)
   const {naturalWidth, naturalHeight} = img
   imgW = naturalWidth/2
   imgH = naturalHeight
   imgAR = imgW/imgH
-  imageToViewport()
-  //
+  imageToViewport(img)
+  setMeta(file)
   background.style.backgroundImage = `url('${file}')`
+  const image = imageList.find(img=>img.secure_url===file)
+  image&&(location.hash = image.filename)
+}
+
+function preLoadImage(uri){
+  loaders.forEach(loader=>{
+    loader.style.width = 0
+    loader.classList.remove(className.loaded)
+  })
+	return new Promise((resolve, reject)=>{
+    const request = new XMLHttpRequest()
+    request.addEventListener('load', e=>{
+      loaders.forEach(loader=>loader.classList.add(className.loaded))
+      resolve(e.target)
+    })
+    request.addEventListener('progress', e=>{
+      const {loaded, total} = e
+      loaders.forEach(loader=>loader.style.width=loaded/total*100+'%')
+    })
+    request.addEventListener('error', reject)
+    request.open('GET', uri, true)
+    request.setRequestHeader('X-Requested-With', 'XMLHttpRequest')
+    request.setRequestHeader('Access-Control-Allow-Origin', '*')
+    request.overrideMimeType('text/plain; charset=x-user-defined')
+    request.send(null)
+  })
 }
 
 function loadImage(uri){
 	return new Promise((resolve, reject)=>{
-    img = document.createElement('img')
+    const img = document.createElement('img')
     img.crossOrigin = 'anonymous'
     img.addEventListener('load', e=>resolve(e.target))
+    img.addEventListener('error', reject)
     img.src = uri
   })
 }
 
-function imageToViewport(){
-  getHalfData().forEach((dataUri, index)=>{
+function imageToViewport(img){
+  getHalfData(img).forEach((dataUri, index)=>{
     Object.assign(viewports[index].style, {
       backgroundImage: `url(${dataUri})`
     })
@@ -197,7 +207,7 @@ function imageToViewport(){
   resetImageScale()
 }
 
-function getHalfData() {
+function getHalfData(img) {
   const canvas = document.createElement('canvas')
   canvas.width = imgW
   canvas.height = imgH
@@ -223,6 +233,33 @@ function resetImageScale(){
 }
 
 //////////////////////////////////////////////////////////////
+
+function clearMeta(){
+  Array.from(contexts).forEach(elm=>{
+    while (elm.lastElementChild) elm.lastElementChild.remove()
+  })
+}
+function setMeta(file){
+	const image = imageList.find(img=>img.secure_url===file)
+  const [c1,c2] = contexts
+  const {context: {caption, ...context} = {}} = image
+  if (caption) {
+    const h3 = createElement('h3',c1,{textContent:caption})
+    c2.appendChild(h3.cloneNode(true))
+  }
+  if (context) {
+    const dl = createElement('dl')
+    Object.entries(context).forEach(([key,value])=>{
+      createElement('dt', dl, {textContent: key})
+      createElement('dd', dl, {textContent: value})
+    })
+    if (dl.children.length) {
+      c1.appendChild(dl)
+      c2.appendChild(dl.cloneNode(true))
+    }
+  }
+
+}
 
 function getScaleOffset(scale,x,y){
   x = x%viewportW
