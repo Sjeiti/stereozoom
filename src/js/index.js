@@ -52,7 +52,7 @@ async function init(){
   const image = imageList.find(img=>img.filename===filename)||imageList[Math.random()*imageList.length<<0]
   await loadImageToViewport(image.secure_url)
 
-  console.log('initialised') // todo: remove log
+  console.info('initialised')
 }
 
 function initElements(){
