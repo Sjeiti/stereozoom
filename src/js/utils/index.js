@@ -22,7 +22,7 @@ export function nextFrame(fn, num=1){
   requestAnimationFrame(down)
 }
 
-export function createElement(name,parent,attr){
+export function createElement(name,parent=null,attr=null){
   const element = document.createElement(name)
   attr&&Object.entries(attr).forEach(([name,value])=>{
     name in element

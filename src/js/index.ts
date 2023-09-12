@@ -1,31 +1,45 @@
 import '../scss/style.scss'
-import {drag, zoom} from './utils/drag'
-import {imageList} from './imageList'
-import {createElement} from './utils'
+import {drag, zoom} from './utils/drag.js'
+import {imageList, IImage} from './imageList'
+import {createElement} from './utils/index.js'
+
+console.info('stereozoom')
+
+interface IImage {
+  filename: string
+  url: string
+  secure_url: string
+  context: {
+    caption: string
+    [key: string]: string
+  }
+}
+
 
 const {min,max} = Math
 
 const root = document.querySelector('[data-stereozoom]')
 const querySelector = selector => root.querySelector(selector)
-const querySelectorAll = selector => root.querySelectorAll(selector)
+const querySelectorAll = selector => Array.from(root.querySelectorAll(selector))
 
 //
-let viewport
-let viewports
-let viewportW
-let viewportH
-let viewportAR
-let loaders
-let contexts
+
+let viewport:HTMLElement
+let viewports:HTMLElement[]
+let viewportW:number
+let viewportH:number
+let viewportAR:number
+let loaders:HTMLElement[]
+let contexts:HTMLElement[]
 
 let background
 
 // let img
 let imgX = 0
 let imgY = 0
-let imgW
-let imgH
-let imgAR
+let imgW:number
+let imgH:number
+let imgAR:number
 let imgScale = 1
 let imgScaleMin = 0.1
 const imgScaleMax = 3
@@ -98,7 +112,7 @@ function initRange(){
     }
     setWidthMargin(style, value)
     onWindowResize()
-    localStorage.setItem(lsMarginName, value)
+    localStorage.setItem(lsMarginName, value as string)
   })
 }
 
@@ -166,7 +180,7 @@ async function loadImageToViewport(file){
 
 function preLoadImage(uri){
   loaders.forEach(loader=>{
-    loader.style.width = 0
+    loader.style.width = '0'
     loader.classList.remove(className.loaded)
   })
 	return new Promise((resolve, reject)=>{
@@ -184,7 +198,7 @@ function preLoadImage(uri){
     request.setRequestHeader('X-Requested-With', 'XMLHttpRequest')
     request.setRequestHeader('Access-Control-Allow-Origin', '*')
     request.overrideMimeType('text/plain; charset=x-user-defined')
-    request.send(null)
+    request.send()
   })
 }
 
