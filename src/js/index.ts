@@ -1,20 +1,8 @@
 import '../scss/style.scss'
-import {drag, zoom} from './utils/drag.js'
-import {imageList, IImage} from './imageList'
-import {createElement} from './utils/index.js'
+import {createElement, drag, zoom} from './utils'
+import {imageList} from './imageList'
 
 console.info('stereozoom')
-
-interface IImage {
-  filename: string
-  url: string
-  secure_url: string
-  context: {
-    caption: string
-    [key: string]: string
-  }
-}
-
 
 const {min,max} = Math
 
@@ -91,7 +79,8 @@ function initRange(){
   //
   const rangeRule = Array.from(document.styleSheets).map(sheet=>{
     try {
-      return Array.from(sheet.cssRules).find(rule=>rule.selectorText==='.viewport, .menu')
+      // return Array.from(sheet.cssRules).find(rule=>rule.selectorText==='.viewport, .menu')
+      return Array.from(sheet.cssRules).find(rule=>rule['selectorText']==='.viewport, .menu')
     } catch(err) {}
   }).find(n=>n)
   const {style} = rangeRule
@@ -165,7 +154,7 @@ function setWidthMargin(style, margin){
 
 async function loadImageToViewport(file){
   clearMeta()
-  await preLoadImage(file)
+  /*await */preLoadImage(file)
   const img = await loadImage(file)
   const {naturalWidth, naturalHeight} = img
   imgW = naturalWidth/2
