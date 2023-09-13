@@ -38,7 +38,7 @@ cloudinary.config({
     ///
 
     const newlist = resources.map(({filename,url,secure_url,context})=>({filename,url,secure_url,context}))
-    writeFile('src/js/imageList.ts', `
+    writeFile('src/js/imageList.ts', `/*eslint-disable*/
 export interface IImage {
   filename: string
   url: string

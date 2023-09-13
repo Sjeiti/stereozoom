@@ -1,4 +1,4 @@
-
+/*eslint-disable*/
 export interface IImage {
   filename: string
   url: string

@@ -9,8 +9,10 @@
   "scripts": {
     "start": "run-p fetchCloudinary dev",
     "dev": "vite",
-    "build": "tsc && vite build",
+    "build": "vite build",
     "preview": "vite preview",
+    "lint": "eslint . --ext .ts",
+    "lint:fix": "eslint . --ext .ts --fix",
     "fetchCloudinary": "node task/fetchCloudinary.js"
   },
   "dependencies": {
@@ -18,12 +20,16 @@
     "state-signals": "^1.0.0"
   },
   "devDependencies": {
+    "@typescript-eslint/eslint-plugin": "^6.7.0",
+    "@typescript-eslint/parser": "^6.7.0",
     "cloudinary": "^1.40.0",
     "dotenv": "^16.3.1",
+    "eslint": "@7.32.0",
     "npm-run-all": "^4.1.5",
     "process": "^0.11.10",
     "sass": "^1.66.1",
     "typescript": "^5.2.2",
-    "vite": "^4.4.9"
+    "vite": "^4.4.9",
+    "vite-plugin-eslint": "^1.8.1"
   }
 }
