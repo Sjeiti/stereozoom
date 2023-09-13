@@ -4,7 +4,7 @@ import {imageList} from './imageList'
 
 console.info('stereozoom')
 
-const {min,max} = Math
+const {min, max} = Math
 
 const root = document.querySelector('[data-stereozoom]')
 const querySelector = selector => root.querySelector(selector)
@@ -52,6 +52,7 @@ async function init(){
   const {hash} = location
   const filename = hash.substring(1)
   const image = imageList.find(img=>img.filename===filename)||imageList[Math.random()*imageList.length<<0]
+  // eslint-disable-next-line @typescript-eslint/no-use-before-define
   await loadImageToViewport(image.secure_url)
 
   console.info('initialised')
@@ -67,11 +68,11 @@ function initElements(){
 
 function initSelect(){
   const select = querySelector('select')
-  imageList.forEach(({filename,secure_url,context:{caption}={}})=>{
+  imageList.forEach(({filename, secure_url, context:{caption}={}})=>{
     createElement('option', select, {value:secure_url, textContent:caption||filename})
   })
-  select.addEventListener('change',onSelectChange)
-  select.addEventListener('mousedown',e=>e.stopPropagation())
+  select.addEventListener('change', onSelectChange)
+  select.addEventListener('mousedown', e=>e.stopPropagation())
 }
 
 function initRange(){
@@ -81,7 +82,9 @@ function initRange(){
     try {
       // return Array.from(sheet.cssRules).find(rule=>rule.selectorText==='.viewport, .menu')
       return Array.from(sheet.cssRules).find(rule=>rule['selectorText']==='.viewport, .menu')
-    } catch(err) {}
+    } catch(err) {
+      return null
+    }
   }).find(n=>n)
   const {style} = rangeRule
   //
@@ -93,9 +96,9 @@ function initRange(){
   }
   range.value = 100-parseFloat(style.width)
   //
-  range.addEventListener('mousedown',e=>e.stopPropagation())
-  range.addEventListener('input',(e)=>{
-    const value = Math.min(e.target.valueAsNumber,marginMax)
+  range.addEventListener('mousedown', e=>e.stopPropagation())
+  range.addEventListener('input', (e)=>{
+    const value = Math.min(e.target.valueAsNumber, marginMax)
     if (value===marginMax) {
       e.target.value = marginMax
     }
@@ -109,19 +112,19 @@ function initEvents(){
   window.addEventListener('resize', onWindowResize)
   onWindowResize()
   //
-  drag((x,y)=>{
-    setPosition(clampX(imgX+x),clampY(imgY+y))
-  }).end((x,y)=>{
-    setPosition(imgX = clampX(imgX+x),imgY = clampY(imgY+y))
+  drag((x, y)=>{
+    setPosition(clampX(imgX+x), clampY(imgY+y))
+  }).end((x, y)=>{
+    setPosition(imgX = clampX(imgX+x), imgY = clampY(imgY+y))
   })
-  zoom((scale,x,y)=>{
-    const {offsetX,offsetY} = getScaleOffset(scale,x,y)
-    setPosition(clampX(imgX-offsetX),clampY(imgY-offsetY))
+  zoom((scale, x, y)=>{
+    const {offsetX, offsetY} = getScaleOffset(scale, x, y)
+    setPosition(clampX(imgX-offsetX), clampY(imgY-offsetY))
     //
     setScale(clampScale(scale*imgScale))
-  }).end((scale,x,y)=>{
-    const {offsetX,offsetY} = getScaleOffset(scale,x,y)
-    setPosition(imgX = clampX(imgX-offsetX),imgY = clampY(imgY-offsetY))
+  }).end((scale, x, y)=>{
+    const {offsetX, offsetY} = getScaleOffset(scale, x, y)
+    setPosition(imgX = clampX(imgX-offsetX), imgY = clampY(imgY-offsetY))
     //
     setScale(imgScale = clampScale(scale*imgScale))
   })
@@ -231,7 +234,7 @@ function resetImageScale(){
   //
   imgX = 0
   imgY = 0
-  setPosition(imgX,imgY)
+  setPosition(imgX, imgY)
   setScale(scale)
 }
 
@@ -244,15 +247,15 @@ function clearMeta(){
 }
 function setMeta(file){
 	const image = imageList.find(img=>img.secure_url===file)
-  const [c1,c2] = contexts
+  const [c1, c2] = contexts
   const {context: {caption, ...context} = {}} = image
   if (caption) {
-    const h3 = createElement('h3',c1,{textContent:caption})
+    const h3 = createElement('h3', c1, {textContent:caption})
     c2.appendChild(h3.cloneNode(true))
   }
   if (context) {
     const dl = createElement('dl')
-    Object.entries(context).forEach(([key,value])=>{
+    Object.entries(context).forEach(([key, value])=>{
       createElement('dt', dl, {textContent: key})
       createElement('dd', dl, {textContent: value})
     })
@@ -264,35 +267,34 @@ function setMeta(file){
 
 }
 
-function getScaleOffset(scale,x,y){
+function getScaleOffset(scale, x, y){
   x = x%viewportW
   const relScale = scale-1
   const relX = x - imgX
   const relY = y - imgY
   const offsetX = relScale*relX
   const offsetY = relScale*relY
-  return {offsetX,offsetY}
+  return {offsetX, offsetY}
 }
 
 function clampScale(scale){
-	return min(max(scale,imgScaleMin),imgScaleMax)
+	return min(max(scale, imgScaleMin), imgScaleMax)
 }
 
 function clampX(x){
-	return min(max(x,viewportW-imgScale*imgW),0)
+	return min(max(x, viewportW-imgScale*imgW), 0)
 }
 
 function clampY(y){
-	return min(max(y,viewportH-imgScale*imgH),0)
+	return min(max(y, viewportH-imgScale*imgH), 0)
 }
 
 //////////////////////////////////////////////////////////////
 
-function setPosition(x,y){
+function setPosition(x, y){
   viewport.style.backgroundPosition = `${x}px ${y}px`
 }
 
 function setScale(scale){
   viewport.style.backgroundSize = `${scale*imgW}px ${scale*imgH}px`
 }
-
