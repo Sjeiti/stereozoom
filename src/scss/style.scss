@@ -119,7 +119,6 @@ label[for=context] {
 
 .menu {
   --fore: rgba(255,255,255,0.3);
-  position: absolute;
   position: relative;
   top: 2.25rem;
   z-index: 20;
@@ -181,14 +180,6 @@ h1 {
   }
 }
 
-.range {
-  position: absolute;
-  left: 0;
-  bottom: 0;
-  z-index: 20;
-  width: 50%;
-}
-
 label[for=explanation] {
   position: relative;
   transform: translateY(-3.5cqw);
@@ -237,9 +228,19 @@ label[for=explanation] {
   line-height: 2rem;
 }
 
+
+.range {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  z-index: 20;
+  //width: 50%;
+  width: calc(50% + 2rem);
+}
 input[type='range'] {
-  -webkit-appearance: none !important;
-  background: transparent;
+  //-webkit-appearance: none !important;
+  //background: transparent;
+  //width: calc(100% + 2rem);
   height: 0;
   margin-bottom: 1rem;
 }
