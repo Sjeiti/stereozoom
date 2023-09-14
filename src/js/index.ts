@@ -47,6 +47,7 @@ async function init(){
   initElements()
   initSelect()
   initRange()
+  initFileInput()
   initEvents()
 
   const {hash} = location
@@ -108,6 +109,38 @@ function initRange(){
   })
 }
 
+function initFileInput(){
+  const inputFile = root.querySelector('input[type=file]') as HTMLInputElement
+  const inputFileStyle = inputFile.style
+  const setInputFileSize = (size:string) => inputFileStyle.width = inputFileStyle.height = size
+
+  const reader = new FileReader()
+  reader.addEventListener('load', e=>{
+    const reader = e.target as FileReader
+    const result = reader.result.toString()
+
+    background.style.backgroundImage = `url('${result}')`
+
+    const img = document.createElement('img')
+    img.src = result
+    img.addEventListener('load', ()=>processImage(img))
+
+    setInputFileSize('0')
+  })
+
+  inputFile.addEventListener('change', ()=>{
+    const [file] = Array.from(inputFile.files)
+    reader.readAsDataURL(file as Blob)
+  })
+
+  root.addEventListener('dragenter', ()=>{
+    setInputFileSize('100%')
+  }, false)
+  root.addEventListener('dragleave', (e:DragEvent)=>{
+    e.target===inputFile&&setInputFileSize('0')
+  }, false)
+}
+
 function initEvents(){
   window.addEventListener('resize', onWindowResize)
   onWindowResize()
@@ -159,11 +192,7 @@ async function loadImageToViewport(file){
   clearMeta()
   /*await */preLoadImage(file)
   const img = await loadImage(file)
-  const {naturalWidth, naturalHeight} = img
-  imgW = naturalWidth/2
-  imgH = naturalHeight
-  imgAR = imgW/imgH
-  imageToViewport(img)
+  processImage(img)
   setMeta(file)
   background.style.backgroundImage = `url('${file}')`
   const image = imageList.find(img=>img.secure_url===file)
@@ -202,6 +231,14 @@ function loadImage(uri){
     img.addEventListener('error', reject)
     img.src = uri
   })
+}
+
+function processImage(img){
+  const {naturalWidth, naturalHeight} = img
+  imgW = naturalWidth/2
+  imgH = naturalHeight
+  imgAR = imgW/imgH
+  imageToViewport(img)
 }
 
 function imageToViewport(img){
