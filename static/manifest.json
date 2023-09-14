@@ -1,11 +1,12 @@
 {
   "name": "StereoZoom",
   "short_name": "StereoZoom",
-  "start_url": ".",
-  "display": "fullscreen",
-  "_display": "fullscreen, standalone, or minimal-ui",
-  "background_color": "#000",
+  "id": "stereozoom",
+  "start_url": "/",
+  "display": "standalone",
   "description": "Watch images in 3D.",
+  "background_color": "#000000",
+  "theme_color": "#000000",
   "icons": [
     {
       "src": "img/icon.svg",
