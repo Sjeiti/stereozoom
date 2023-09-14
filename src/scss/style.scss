@@ -258,3 +258,14 @@ input[type=range]::-webkit-slider-thumb, input[type=range]::-moz-range-thumb {
   background-repeat: no-repeat;
   filter: invert(1);
 }
+
+input[type=file] {
+  position: absolute;
+  left: 0;
+  top: 0;
+  z-index: 60;
+  width: 0;
+  height: 0;
+  opacity: 0;
+  background-color: lime;
+}
