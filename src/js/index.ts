@@ -86,6 +86,7 @@ function initRange(){
       return null
     }
   }).find(n=>n)
+  console.log('rangeRule',rangeRule) // todo: remove log
   const {style} = rangeRule
   //
   const lsMarginName = 'margin'
