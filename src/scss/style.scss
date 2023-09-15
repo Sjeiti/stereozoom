@@ -123,16 +123,52 @@ label[for=context] {
   top: 2.25rem;
   z-index: 20;
   padding-bottom: 2rem;
-  select {
-    position: absolute;
-    top: 0;
-    right: 0;
-    width: 100%;
-    height: 3rem;
+}
+
+.list {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  overflow: hidden;
+  position: absolute;
+  left: 2rem;
+  top: 5rem;
+  //top: 6cqw;
+  z-index: 111;
+  width: calc(100% - 4rem);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  text-align: center;
+  button {
+    position: relative;
+    display: inline-flex;
+    align-items: flex-start;
+    width: 6.25rem;
+    height: 6.25rem;
+    margin: 0;
+    padding: 0.5rem;
     border: 0;
-    background: transparent;
-    opacity: 0.01;
     cursor: pointer;
+    font-family: 'Oswald', sans-serif;
+    color: white;
+    font-size: 1.125rem;
+    text-align: left;
+    line-height: 1.125rem;
+    text-shadow: 0 0 0.25rem #000;
+    box-shadow: 0 0 0.5rem #0008 inset;
+  }
+}
+#showlist {
+  + .list {
+    max-height: 0;
+    transition: max-height 400ms ease, overflow 1ms ease 400ms;
+  }
+  &:checked + .list {
+    max-height: calc(100vh - 8rem);
+    //max-height: calc(100vh - 6cqw);
+    //max-height: calc(100vh - 25cqw);
+    overflow-y: auto;
   }
 }
 
@@ -152,11 +188,13 @@ h1 {
   width: 100%;
   container-type: inline-size;
   container-name: heading;
+  cursor: pointer;
   &:before,&:after{
     content: attr(data-text);
     font-size: 4cqw;
     flex: 1 1 auto;
     overflow: hidden;
+    cursor: pointer;
   }
   &:before {
     transform: translateX(2rem);
@@ -178,6 +216,10 @@ h1 {
         ,0.1vw 0.3vw 0.2vw black
     ;
   }
+}
+
+label {
+  cursor: pointer;
 }
 
 label[for=explanation] {

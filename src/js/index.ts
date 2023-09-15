@@ -68,12 +68,48 @@ function initElements(){
 }
 
 function initSelect(){
-  const select = querySelector('select')
-  imageList.forEach(({filename, secure_url, context:{caption}={}})=>{
-    createElement('option', select, {value:secure_url, textContent:caption||filename})
-  })
-  select.addEventListener('change', onSelectChange)
-  select.addEventListener('mousedown', e=>e.stopPropagation())
+  // const select = querySelector('select')
+  // imageList.forEach(({filename, secure_url, context:{caption}={}})=>{
+  //   createElement('option', select, {value:secure_url, textContent:caption||filename})
+  // })
+  // select.addEventListener('change', onSelectChange)
+  // select.addEventListener('mousedown', e=>e.stopPropagation())
+
+  //
+  // https://res.cloudinary.com/dn1rmdjs5/image/upload/v1694252157/stereozoom/bedshells3.jpg
+  // https://res.cloudinary.com/dn1rmdjs5/image/upload/c_crop,g_west,h_500,w_500/c_scale,w_100/v1694774342/stereozoom/pollen_5004342712_o.jpg
+  // https://res.cloudinary.com/dn1rmdjs5/image/upload/c_crop,g_west,h_500,w_0.5/c_scale,w_100/c_crop,g_west,w_100,h_100/v1591085201/stereozoom/chrysalis_head.jpg
+  // https://res.cloudinary.com/dn1rmdjs5/image/upload/c_crop,g_west,h_500,w_0.5/c_scale,w_100/c_crop,g_west,w_100,h_100/e_gradient_fade::10,y_1.0,b_black/v1591085201/stereozoom/chrysalis_head.jpg
+
+  // const temp = createElement('div', document.body, {className:'list'})
+
+  const showList = querySelector('#showlist')
+  const list = querySelector('.list')
+
+  const imageTransforms = [
+      'c_crop,g_west,h_500,w_0.5'
+    , 'c_scale,w_100'
+    , 'c_crop,g_west,w_100,h_100'
+    , 'b_black,o_60'
+    // , 'e_gradient_fade::10,y_1.0,b_black'
+  ]
+  const replacement = `/upload/${imageTransforms.join('/')}/v`
+  imageList
+      .sort(({filename:name1}, {filename:name2})=>name1>name2?1:0)
+      .forEach(({filename, secure_url, context:{caption}={}})=>{
+        const src = secure_url.replace(/\/upload\/v/, replacement)
+        createElement('button', createElement('li', list), {
+            style: `background-image:url('${src}');`
+          , textContent: caption||filename
+          , value: secure_url
+        })
+            .addEventListener('click', (e:MouseEvent)=>{
+              const {target: {value}} = e
+              console.log('value', value) // todo: remove log
+              showList.checked = false
+              loadImageToViewport(value)
+            })
+      })
 }
 
 function initRange(){
@@ -164,10 +200,6 @@ function initEvents(){
 }
 
 //////////////////////////////////////////////////////////////
-
-function onSelectChange(e){
-  loadImageToViewport(e.target.value)
-}
 
 function onWindowResize(){
   // const vieportWOld = viewportW
