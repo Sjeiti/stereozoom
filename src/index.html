@@ -31,9 +31,10 @@
   </div>
   <div class="background"></div>
   <div class="menu">
-    <h1 data-text="stereozoom">stereozoom</h1>
+    <label for="showlist"><h1 data-text="stereozoom">stereozoom</h1></label>
     <label for="explanation" class="circon">?</label>
-    <select id="list"></select>
+    <input type="checkbox" id="showlist" class="visually-hidden" />
+    <ul class="list"></ul>
   </div>
   <div class="explanation">
     <input type="checkbox" id="explanation" class="visually-hidden" />
@@ -51,7 +52,7 @@
   </svg>
       <p>You may have to adjust the image width if your monitor is large or you are too close to the screen. Drag the button on the bottom left.</p>
       <p>Use your mousewheel or pinch to zoom, and drag to move around.</p>
-      <p>You can choose different images by <label for="list">clicking the title</label></p>
+      <p>You can choose different images by <label for="showlist">clicking the title</label></p>
     </div>
   </div>
   <input type="range" class="range"/>
